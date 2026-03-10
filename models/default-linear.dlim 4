@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tools.descartes.dlim:Sequence xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tools.descartes.dlim="http://descartes.tools/dlim/0.1"
+    name="doublePeak"
+    terminateAfterLoops="1"
+    firstIterationEnd="3600.0"
+    loopDuration="3600.0"
+    finalDuration="3600.0">
+
+    <!-- Moderate organic noise: shoppers arrive in small clusters -->
+    <combine>
+        <function xsi:type="tools.descartes.dlim:UniformNoise" min="0.0" max="0.8"/>
+    </combine>
+
+    <!-- Late night: minimal traffic, just a handful of insomniacs browsing -->
+    <sequenceFunctionContainers name="nightTail" duration="300.0" firstIterationEnd="300.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="1.5"/>
+    </sequenceFunctionContainers>
+
+    <!-- Early birds: planners discover holiday sales organically, steady linear growth -->
+    <sequenceFunctionContainers name="earlyDiscovery" duration="400.0" firstIterationStart="300.0" firstIterationEnd="700.0">
+        <function xsi:type="tools.descartes.dlim:LinearTrend" functionOutputAtStart="1.5" functionOutputAtEnd="4.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Planner acceleration: word-of-mouth and email campaigns kick in, smooth S-curve ramp -->
+    <sequenceFunctionContainers name="plannerRamp" duration="300.0" firstIterationStart="700.0" firstIterationEnd="1000.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="4.0" functionOutputAtEnd="8.5"/>
+    </sequenceFunctionContainers>
+
+    <!-- Planner plateau: methodical shoppers at peak browsing, stable sustained traffic -->
+    <sequenceFunctionContainers name="plannerPlateau" duration="300.0" firstIterationStart="1000.0" firstIterationEnd="1300.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="9.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Planner exit: shoppers complete purchases and leave, smooth S-curve decline -->
+    <sequenceFunctionContainers name="plannerExit" duration="300.0" firstIterationStart="1300.0" firstIterationEnd="1600.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="9.0" functionOutputAtEnd="3.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Lull: dead zone between planner and last-minute cohorts -->
+    <sequenceFunctionContainers name="lull" duration="200.0" firstIterationStart="1600.0" firstIterationEnd="1800.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="2.5"/>
+    </sequenceFunctionContainers>
+
+    <!-- Last-minute trickle: first urgent shoppers arrive at a steady rate -->
+    <sequenceFunctionContainers name="lastMinuteTrickle" duration="200.0" firstIterationStart="1800.0" firstIterationEnd="2000.0">
+        <function xsi:type="tools.descartes.dlim:LinearTrend" functionOutputAtStart="2.5" functionOutputAtEnd="6.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Panic acceleration: urgency drives exponential growth in arrivals -->
+    <sequenceFunctionContainers name="panicAcceleration" duration="200.0" firstIterationStart="2000.0" firstIterationEnd="2200.0">
+        <function xsi:type="tools.descartes.dlim:ExponentialTrend" functionOutputAtStart="6.0" functionOutputAtEnd="14.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Peak frenzy: maximum checkout pressure, everyone buying at once -->
+    <sequenceFunctionContainers name="peakFrenzy" duration="200.0" firstIterationStart="2200.0" firstIterationEnd="2400.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="14.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Shipping cutoff: deadline passes, smooth S-curve decline as urgency evaporates -->
+    <sequenceFunctionContainers name="shippingCutoff" duration="400.0" firstIterationStart="2400.0" firstIterationEnd="2800.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="14.0" functionOutputAtEnd="4.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Gift cards only: steady decline as only digital purchases remain -->
+    <sequenceFunctionContainers name="giftCardsOnly" duration="400.0" firstIterationStart="2800.0" firstIterationEnd="3200.0">
+        <function xsi:type="tools.descartes.dlim:LinearTrend" functionOutputAtStart="4.0" functionOutputAtEnd="2.5"/>
+    </sequenceFunctionContainers>
+
+    <!-- Holiday quiet: everyone celebrating, minimal shopping -->
+    <sequenceFunctionContainers name="holidayQuiet" duration="400.0" firstIterationStart="3200.0" firstIterationEnd="3600.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="1.5"/>
+    </sequenceFunctionContainers>
+</tools.descartes.dlim:Sequence>

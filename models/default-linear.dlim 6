@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tools.descartes.dlim:Sequence xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tools.descartes.dlim="http://descartes.tools/dlim/0.1"
+    name="flashDealCascade"
+    terminateAfterLoops="1"
+    firstIterationEnd="3600.0"
+    loopDuration="3600.0"
+    finalDuration="3600.0">
+
+    <!--
+        Layered composition:
+        Base layer  = organic shopping traffic (Constant / LinearTrend)
+        Combine #1  = flash deal burst spikes (ExponentialIncreaseAndDecline, LinearIncreaseAndDecline)
+        Combine #2  = delayed social media wave (ExponentialIncreaseLogarithmicDecline)
+        Combine #3  = organic noise
+    -->
+
+    <!-- COMBINE: Deal burst spikes as additive overlay on organic baseline -->
+    <combine>
+        <function xsi:type="tools.descartes.dlim:Sequence" name="dealBursts"
+                  terminateAfterTime="3600.0"
+                  firstIterationEnd="3600.0"
+                  loopDuration="3600.0"
+                  finalDuration="3600.0">
+
+            <!-- Wait for first deal -->
+            <sequenceFunctionContainers name="preDealWait" duration="400.0" firstIterationEnd="400.0"/>
+
+            <!-- Deal #1: "Kitchen appliances 40% off" — moderate spike, medium sharpness -->
+            <sequenceFunctionContainers name="deal1" duration="200.0" firstIterationStart="400.0" firstIterationEnd="600.0">
+                <function xsi:type="tools.descartes.dlim:ExponentialIncreaseAndDecline" peak="6.0" peakTime="50.0"/>
+            </sequenceFunctionContainers>
+
+            <!-- Cooldown between deals -->
+            <sequenceFunctionContainers name="gap1" duration="200.0" firstIterationStart="600.0" firstIterationEnd="800.0"/>
+
+            <!-- Deal #2: "Electronics flash sale" — largest spike, very sharp peak -->
+            <sequenceFunctionContainers name="deal2" duration="250.0" firstIterationStart="800.0" firstIterationEnd="1050.0">
+                <function xsi:type="tools.descartes.dlim:ExponentialIncreaseAndDecline" peak="12.0" peakTime="30.0"/>
+            </sequenceFunctionContainers>
+
+            <!-- Cooldown -->
+            <sequenceFunctionContainers name="gap2" duration="150.0" firstIterationStart="1050.0" firstIterationEnd="1200.0"/>
+
+            <!-- Deal #3: "Last chance clearance" — gentler triangular spike -->
+            <sequenceFunctionContainers name="deal3" duration="200.0" firstIterationStart="1200.0" firstIterationEnd="1400.0">
+                <function xsi:type="tools.descartes.dlim:LinearIncreaseAndDecline" peak="5.0" peakTime="50.0"/>
+            </sequenceFunctionContainers>
+
+            <!-- No more deals -->
+            <sequenceFunctionContainers name="postDeals" duration="2200.0" firstIterationStart="1400.0" firstIterationEnd="3600.0"/>
+        </function>
+    </combine>
+
+    <!-- COMBINE: Delayed social media wave — viral spread with long organic tail -->
+    <combine>
+        <function xsi:type="tools.descartes.dlim:Sequence" name="socialWave"
+                  terminateAfterTime="3600.0"
+                  firstIterationEnd="3600.0"
+                  loopDuration="3600.0"
+                  finalDuration="3600.0">
+
+            <!-- Quiet until social media posts accumulate -->
+            <sequenceFunctionContainers name="preSocialWait" duration="1800.0" firstIterationEnd="1800.0"/>
+
+            <!-- Viral wave: fast exponential takeoff, slow logarithmic decay -->
+            <sequenceFunctionContainers name="viralWave" duration="1000.0" firstIterationStart="1800.0" firstIterationEnd="2800.0">
+                <function xsi:type="tools.descartes.dlim:ExponentialIncreaseLogarithmicDecline" peak="4.0" peakTime="200.0"/>
+            </sequenceFunctionContainers>
+
+            <!-- Post-social quiet -->
+            <sequenceFunctionContainers name="postSocial" duration="800.0" firstIterationStart="2800.0" firstIterationEnd="3600.0"/>
+        </function>
+    </combine>
+
+    <!-- COMBINE: Organic variation in shopper arrival clusters -->
+    <combine>
+        <function xsi:type="tools.descartes.dlim:UniformNoise" min="0.0" max="0.8"/>
+    </combine>
+
+    <!-- BASE LAYER: Organic shopping traffic throughout the day -->
+
+    <!-- Normal morning: steady organic baseline -->
+    <sequenceFunctionContainers name="morningBaseline" duration="800.0" firstIterationEnd="800.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="2.5"/>
+    </sequenceFunctionContainers>
+
+    <!-- Post-deal fatigue: slight organic decline as deal excitement fades -->
+    <sequenceFunctionContainers name="postDealFatigue" duration="600.0" firstIterationStart="800.0" firstIterationEnd="1400.0">
+        <function xsi:type="tools.descartes.dlim:LinearTrend" functionOutputAtStart="2.5" functionOutputAtEnd="2.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Quiet afternoon: no events, low steady traffic -->
+    <sequenceFunctionContainers name="quietAfternoon" duration="400.0" firstIterationStart="1400.0" firstIterationEnd="1800.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="2.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Social-driven organic uplift: smooth S-curve as new visitors arrive from posts -->
+    <sequenceFunctionContainers name="socialOrganic" duration="600.0" firstIterationStart="1800.0" firstIterationEnd="2400.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="2.0" functionOutputAtEnd="3.5"/>
+    </sequenceFunctionContainers>
+
+    <!-- Evening decline: steady organic wind-down -->
+    <sequenceFunctionContainers name="eveningDecline" duration="600.0" firstIterationStart="2400.0" firstIterationEnd="3000.0">
+        <function xsi:type="tools.descartes.dlim:LinearTrend" functionOutputAtStart="3.5" functionOutputAtEnd="2.0"/>
+    </sequenceFunctionContainers>
+
+    <!-- Night: back to low baseline -->
+    <sequenceFunctionContainers name="night" duration="600.0" firstIterationStart="3000.0" firstIterationEnd="3600.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="1.5"/>
+    </sequenceFunctionContainers>
+</tools.descartes.dlim:Sequence>

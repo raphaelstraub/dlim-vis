@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tools.descartes.dlim:Sequence xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tools.descartes.dlim="http://descartes.tools/dlim/0.1"
+    name="default1"
+    terminateAfterLoops="1"
+    firstIterationEnd="3600.0"
+    loopDuration="3600.0"
+    finalDuration="3600.0">
+
+    <combine>
+        <function xsi:type="tools.descartes.dlim:UniformNoise" min="0.0" max="2.0"/>
+    </combine>
+
+    <sequenceFunctionContainers name="veryEarlyTrickle" duration="300.0" firstIterationEnd="300.0">
+        <function xsi:type="tools.descartes.dlim:LinearTrend" constant="3.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="warmup" duration="600.0" firstIterationStart="300.0" firstIterationEnd="900.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="3.0" functionOutputAtEnd="6.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="preSaleRising0" duration="500.0" firstIterationStart="900.0" firstIterationEnd="1400.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="6.0" functionOutputAtEnd="12.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="preSaleRising1" duration="200.0" firstIterationStart="1400.0" firstIterationEnd="1600.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="12.0" functionOutputAtEnd="20.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="salePeak" duration="200.0" firstIterationStart="1600.0" firstIterationEnd="1800.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="20.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="postSaleHigh" duration="300.0" firstIterationStart="1800.0" firstIterationEnd="2100.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="20.0" functionOutputAtEnd="16.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="postSaleDecline0" duration="900.0" firstIterationStart="2100.0" firstIterationEnd="3000.0">
+        <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="16.0" functionOutputAtEnd="3.0"/>
+    </sequenceFunctionContainers>
+
+    <sequenceFunctionContainers name="postSaleDecline1" duration="600.0" firstIterationStart="3000.0" firstIterationEnd="3600.0">
+        <function xsi:type="tools.descartes.dlim:Constant" constant="3.0"/>
+    </sequenceFunctionContainers>
+</tools.descartes.dlim:Sequence>

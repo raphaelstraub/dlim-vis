@@ -42,7 +42,7 @@ dev = [
 dlim-vis = "dlim.cli:main"
 
 [project.urls]
-Repository = "https://github.com/CHANGEME/dlim-vis"
+Repository = "https://github.com/raphaelstraub/dlim-vis"
 
 [tool.setuptools.packages.find]
 include = ["dlim*"]

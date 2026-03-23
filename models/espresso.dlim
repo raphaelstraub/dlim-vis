@@ -10,19 +10,19 @@
     <sequenceFunctionContainers name="low" duration="30.0" firstIterationEnd="30.0">
         <function xsi:type="tools.descartes.dlim:Constant" constant="5.0"/>
     </sequenceFunctionContainers>
-    <sequenceFunctionContainers name="seasonal0" duration="90.0" firstIterationStart="30.0" firstIterationEnd="120.0">
+    <sequenceFunctionContainers name="phase0" duration="90.0" firstIterationStart="30.0" firstIterationEnd="120.0">
         <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="5.0" functionOutputAtEnd="60.0"/>
     </sequenceFunctionContainers>
-    <sequenceFunctionContainers name="seasonal1" duration="90.0" firstIterationStart="120.0" firstIterationEnd="210.0">
+    <sequenceFunctionContainers name="phase1" duration="90.0" firstIterationStart="120.0" firstIterationEnd="210.0">
         <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="60.0" functionOutputAtEnd="15.0"/>
     </sequenceFunctionContainers>
     <sequenceFunctionContainers name="low" duration="90.0" firstIterationStart="210.0" firstIterationEnd="300.0">
         <function xsi:type="tools.descartes.dlim:Constant" constant="15.0"/>
     </sequenceFunctionContainers>
-    <sequenceFunctionContainers name="seasonal2" duration="90.0" firstIterationStart="300.0" firstIterationEnd="390.0">
+    <sequenceFunctionContainers name="phase2" duration="90.0" firstIterationStart="300.0" firstIterationEnd="390.0">
         <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="15.0" functionOutputAtEnd="75.0"/>
     </sequenceFunctionContainers>
-    <sequenceFunctionContainers name="seasonal4" duration="90.0" firstIterationStart="390.0" firstIterationEnd="480.0">
+    <sequenceFunctionContainers name="phase3" duration="90.0" firstIterationStart="390.0" firstIterationEnd="480.0">
         <function xsi:type="tools.descartes.dlim:SinTrend" functionOutputAtStart="75.0"/>
     </sequenceFunctionContainers>
     <sequenceFunctionContainers name="new low" duration="120.0" firstIterationStart="480.0" firstIterationEnd="600.0">

@@ -8,7 +8,6 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 
 from dlim.parser import DlimModel
@@ -20,22 +19,10 @@ from dlim.parser import DlimModel
 
 _CURVE_COLOR = "#1f77b4"     # matplotlib default blue
 _FILL_ALPHA = 0.15
-_GRID_ALPHA = 0.3
-_ANNOTATION_COLOR = "#888888"
-_ANNOTATION_ALPHA = 0.5
-
-
-def _format_time(seconds: float) -> str:
-    """Human-readable time label."""
-    if seconds >= 3600:
-        h = int(seconds // 3600)
-        m = int((seconds % 3600) // 60)
-        return f"{h}h{m:02d}m" if m else f"{h}h"
-    if seconds >= 60:
-        m = int(seconds // 60)
-        s = int(seconds % 60)
-        return f"{m}m{s:02d}s" if s else f"{m}m"
-    return f"{int(seconds)}s"
+_ZONE_COLORS = ["#e8e8e8", "#f5f5f5"]  # alternating light greys for zone spans
+_ZONE_ALPHA = 0.4
+_ZONE_LINE_COLOR = "#aaaaaa"
+_ZONE_TEXT_COLOR = "#555555"
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +44,7 @@ def render(
     Parameters
     ----------
     model : DlimModel
-        The parsed model (used for title and annotation data).
+        The parsed model (used for annotation data).
     times, values : np.ndarray
         Sampled time / arrival-rate arrays.
     output_path : str | Path
@@ -65,7 +52,7 @@ def render(
     dpi : int
         Output resolution.
     annotations : bool
-        If ``True``, draw vertical lines at container boundaries.
+        If ``True``, draw shaded zone spans with labels at container boundaries.
 
     Returns
     -------
@@ -75,9 +62,54 @@ def render(
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Use a clean academic style
     with plt.style.context("seaborn-v0_8-whitegrid"):
         fig, ax = plt.subplots(figsize=(10, 4))
+
+        # Axes limits (set early so annotations can reference y_max)
+        ax.set_xlim(times[0], times[-1])
+        y_max = max(values.max() * 1.1, 1.0)
+        ax.set_ylim(0, y_max)
+
+        # Container zone annotations (drawn first, behind everything)
+        if annotations:
+            containers = model.root_sequence.containers
+            for i, container in enumerate(containers):
+                t0 = container.first_iteration_start
+                t1 = container.first_iteration_end
+
+                # Alternating shaded spans
+                ax.axvspan(
+                    t0, t1,
+                    color=_ZONE_COLORS[i % 2],
+                    alpha=_ZONE_ALPHA,
+                    zorder=0,
+                )
+
+                # Boundary line (skip the very first one at t=0)
+                if t0 > 0:
+                    ax.axvline(
+                        x=t0,
+                        color=_ZONE_LINE_COLOR,
+                        linewidth=0.6,
+                        linestyle="-",
+                        alpha=0.6,
+                        zorder=1,
+                    )
+
+                # Zone label at top center
+                if container.name:
+                    t_mid = (t0 + t1) / 2
+                    ax.text(
+                        t_mid,
+                        y_max * 0.96,
+                        container.name,
+                        fontsize=7,
+                        fontweight="bold",
+                        color=_ZONE_TEXT_COLOR,
+                        ha="center",
+                        va="top",
+                        zorder=5,
+                    )
 
         # Main curve
         ax.plot(times, values, color=_CURVE_COLOR, linewidth=0.8, zorder=3)
@@ -85,69 +117,18 @@ def render(
         # Light fill under the curve
         ax.fill_between(times, values, alpha=_FILL_ALPHA, color=_CURVE_COLOR, zorder=2)
 
-        # Container boundary annotations
-        if annotations:
-            for container in model.root_sequence.containers:
-                t_start = container.first_iteration_start
-                if t_start > 0:
-                    ax.axvline(
-                        x=t_start,
-                        color=_ANNOTATION_COLOR,
-                        linewidth=0.5,
-                        linestyle="--",
-                        alpha=_ANNOTATION_ALPHA,
-                        zorder=1,
-                    )
-                # Label at the midpoint
-                t_mid = (container.first_iteration_start + container.first_iteration_end) / 2
-                if container.name:
-                    ax.text(
-                        t_mid,
-                        ax.get_ylim()[1] if ax.get_ylim()[1] > 0 else 1.0,
-                        container.name,
-                        fontsize=5.5,
-                        color=_ANNOTATION_COLOR,
-                        ha="center",
-                        va="bottom",
-                        rotation=45,
-                        alpha=0.7,
-                        zorder=4,
-                    )
+        # Axis labels — no units
+        ax.set_xlabel("Time", fontsize=10)
+        ax.set_ylabel("Arrival Rate", fontsize=10)
 
-        # Axes
-        ax.set_xlim(times[0], times[-1])
-        y_max = max(values.max() * 1.1, 1.0)
-        ax.set_ylim(0, y_max)
-
-        ax.set_xlabel("Time (s)", fontsize=10)
-        ax.set_ylabel("Arrival Rate (req/s)", fontsize=10)
-
-        # X-axis: human-readable time labels
-        duration = times[-1]
-        if duration >= 7200:
-            ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
-        elif duration >= 3600:
-            ax.xaxis.set_major_locator(ticker.MultipleLocator(600))
-        elif duration >= 600:
-            ax.xaxis.set_major_locator(ticker.MultipleLocator(120))
-        else:
-            ax.xaxis.set_major_locator(ticker.AutoLocator())
-
-        ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: _format_time(x)))
+        # Raw numeric x-axis (no time formatting)
+        ax.xaxis.set_major_locator(plt.AutoLocator())
+        ax.xaxis.set_major_formatter(plt.ScalarFormatter())
+        ax.ticklabel_format(axis="x", style="plain")
 
         ax.tick_params(labelsize=8)
 
-        # Title
-        model_name = model.root_sequence.name or (
-            model.source_path.stem if model.source_path else "DLIM Model"
-        )
-        n_containers = len(model.root_sequence.containers)
-        duration_str = _format_time(model.root_sequence.final_duration)
-        ax.set_title(
-            f"{model_name}  ({duration_str}, {n_containers} segments)",
-            fontsize=11,
-            pad=10,
-        )
+        # No title
 
         fig.tight_layout()
         fig.savefig(output_path, dpi=dpi, bbox_inches="tight")
